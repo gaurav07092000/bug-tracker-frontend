@@ -117,13 +117,9 @@ const TicketForm = ({ isOpen, onClose, ticket = null, projectId }) => {
         priority: formData.priority,
         type: formData.type,
         project: projectId,
+        assignedTo: formData.assignedTo && formData.assignedTo.trim() ? formData.assignedTo.trim() : null,
       };
 
-      // Add optional fields only if they have values
-      if (formData.assignedTo && formData.assignedTo.trim()) {
-        ticketData.assignedTo = formData.assignedTo.trim();
-      }
-      
       if (formData.dueDate) {
         ticketData.dueDate = new Date(formData.dueDate).toISOString();
       }
