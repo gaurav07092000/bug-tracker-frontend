@@ -172,10 +172,10 @@ The frontend communicates with the backend through RESTful APIs:
 
 ### API Configuration
 
-The application is configured to connect to `http://localhost:5000/api` by default. You can change this in the `.env` file:
+The application is configured to connect to `https://bug-tracker-backend-977q.onrender.com/api` by default. You can change this in the `.env` file:
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://bug-tracker-backend-977q.onrender.com/api
 ```
 
 ### Data Structures

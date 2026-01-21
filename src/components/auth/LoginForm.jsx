@@ -71,29 +71,14 @@ const LoginForm = () => {
     setErrors({});
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+      const result = await dispatch(loginUser({
+        email: formData.email,
+        password: formData.password,
+      })).unwrap();
 
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
-        
-        navigate('/dashboard');
-      } else {
-        setErrors({ general: data.message || 'Login failed' });
-      }
+      navigate('/dashboard');
     } catch (error) {
-      setErrors({ general: 'Network error occurred. Please try again.' });
+      setErrors({ general: error || 'Login failed' });
     }
   };
 
