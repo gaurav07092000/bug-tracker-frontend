@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUsers } from '../../store/slices/ticketSlice';
-import { addProjectMember, removeProjectMember } from '../../store/slices/projectSlice';
+import { addProjectMember, removeProjectMember, fetchProjects } from '../../store/slices/projectSlice';
 import Button from '../ui/Button';
 import Select from '../ui/Select';
 import Modal from '../ui/Modal';
@@ -32,6 +32,7 @@ const ProjectMembers = ({ isOpen, onClose, project }) => {
 
   useEffect(() => {
     if (isOpen && currentProject) {
+      // Always fetch users when the modal opens to ensure we have current data
       dispatch(fetchUsers(null));
     }
   }, [dispatch, isOpen, currentProject]);
@@ -63,6 +64,9 @@ const ProjectMembers = ({ isOpen, onClose, project }) => {
         role: selectedRole
       })).unwrap();
 
+      // Refresh projects to get updated member data
+      dispatch(fetchProjects());
+      
       setSelectedUserId('');
       setSelectedRole('CONTRIBUTOR');
       toast.success('Member added successfully');
@@ -187,10 +191,10 @@ const ProjectMembers = ({ isOpen, onClose, project }) => {
                 >
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-900">
-                      {member.name || member.user?.name || 'Unknown'}
+                      {member.user?.name || member.name || 'Unknown User'}
                     </h4>
                     <p className="text-sm text-gray-500">
-                      {member.email || member.user?.email || ''}
+                      {member.user?.email || member.email || 'No email provided'}
                     </p>
                     <span className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mt-1">
                       {member.role || 'CONTRIBUTOR'}
@@ -201,7 +205,7 @@ const ProjectMembers = ({ isOpen, onClose, project }) => {
                     size="sm"
                     onClick={() => handleRemoveMember(
                       member,
-                      member.name || member.user?.name || 'this user'
+                      member.user?.name || member.name || 'this user'
                     )}
                     disabled={loading}
                     className="text-red-600 border-red-200 hover:bg-red-50"

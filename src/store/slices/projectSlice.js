@@ -102,10 +102,22 @@ export const addProjectMember = createAsyncThunk(
       const users = state.tickets.users || [];
       const user = users.find(u => (u._id || u.id) === userId);
       
-      const member = response.data?.member || response.data || {
-        user: user || { _id: userId, name: 'Unknown', email: '' },
-        role: role
-      };
+      let member = response.data?.member || response.data;
+      
+      // If we don't have a proper member structure from the API, create one
+      if (!member || !member.user) {
+        member = {
+          user: user || { _id: userId, name: 'Unknown User', email: 'unknown@example.com' },
+          role: role,
+          _id: `member_${projectId}_${userId}`,
+          userId: userId
+        };
+      }
+      
+      // Ensure the member has user information
+      if (member.user && user) {
+        member.user = { ...member.user, ...user };
+      }
       
       return { projectId, member, userId };
     } catch (error) {
