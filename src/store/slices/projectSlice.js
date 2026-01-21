@@ -1,13 +1,31 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { projectAPI } from '../../services/api';
+import { projectAPI, ticketAPI } from '../../services/api';
 
 // Async thunks
 export const fetchProjects = createAsyncThunk(
   'projects/fetchProjects',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await projectAPI.getAll();
-      return response.data?.projects || response.data || [];
+      const [projectsResponse, ticketsResponse] = await Promise.all([
+        projectAPI.getAll(),
+        ticketAPI.getAll()
+      ]);
+      
+      const projects = projectsResponse.data?.projects || projectsResponse.data || [];
+      const tickets = ticketsResponse.data?.tickets || ticketsResponse.data || [];
+      
+      // Add ticket count to each project
+      const projectsWithTicketCount = projects.map(project => {
+        const projectTickets = tickets.filter(ticket => 
+          ticket.project?._id === project._id || ticket.project === project._id
+        );
+        return {
+          ...project,
+          ticketCount: projectTickets.length
+        };
+      });
+      
+      return projectsWithTicketCount;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch projects');
     }
@@ -21,7 +39,19 @@ export const createProject = createAsyncThunk(
       const response = await projectAPI.create(projectData);
       return response.data?.project || response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create project');
+      const errorData = error.response?.data;
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        // Return validation errors for form handling
+        return rejectWithValue({
+          message: errorData.message || 'Validation error',
+          errors: errorData.errors,
+          isValidationError: true
+        });
+      }
+      return rejectWithValue({
+        message: errorData?.message || 'Failed to create project',
+        isValidationError: false
+      });
     }
   }
 );
@@ -33,7 +63,19 @@ export const updateProject = createAsyncThunk(
       const response = await projectAPI.update(id, projectData);
       return response.data?.project || response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update project');
+      const errorData = error.response?.data;
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        // Return validation errors for form handling
+        return rejectWithValue({
+          message: errorData.message || 'Validation error',
+          errors: errorData.errors,
+          isValidationError: true
+        });
+      }
+      return rejectWithValue({
+        message: errorData?.message || 'Failed to update project',
+        isValidationError: false
+      });
     }
   }
 );

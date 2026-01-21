@@ -41,7 +41,19 @@ export const registerUser = createAsyncThunk(
       localStorage.setItem('user', JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+      const errorData = error.response?.data;
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        // Return validation errors for form handling
+        return rejectWithValue({
+          message: errorData.message || 'Validation error',
+          errors: errorData.errors,
+          isValidationError: true
+        });
+      }
+      return rejectWithValue({
+        message: errorData?.message || 'Registration failed',
+        isValidationError: false
+      });
     }
   }
 );

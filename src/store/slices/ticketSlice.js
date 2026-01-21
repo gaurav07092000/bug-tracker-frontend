@@ -52,7 +52,19 @@ export const createTicket = createAsyncThunk(
       // Handle nested response structure
       return response.data?.ticket || response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create ticket');
+      const errorData = error.response?.data;
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        // Return validation errors for form handling
+        return rejectWithValue({
+          message: errorData.message || 'Validation error',
+          errors: errorData.errors,
+          isValidationError: true
+        });
+      }
+      return rejectWithValue({
+        message: errorData?.message || 'Failed to create ticket',
+        isValidationError: false
+      });
     }
   }
 );
@@ -64,7 +76,19 @@ export const updateTicket = createAsyncThunk(
       const response = await ticketAPI.update(id, ticketData);
       return response.data?.ticket || response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update ticket');
+      const errorData = error.response?.data;
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        // Return validation errors for form handling
+        return rejectWithValue({
+          message: errorData.message || 'Validation error',
+          errors: errorData.errors,
+          isValidationError: true
+        });
+      }
+      return rejectWithValue({
+        message: errorData?.message || 'Failed to update ticket',
+        isValidationError: false
+      });
     }
   }
 );

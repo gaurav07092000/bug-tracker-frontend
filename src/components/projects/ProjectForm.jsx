@@ -92,6 +92,22 @@ const ProjectForm = ({ isOpen, onClose, project = null }) => {
       onClose();
     } catch (err) {
       console.error('Error saving project:', err);
+      
+      // Handle validation errors from backend
+      if (err.isValidationError && err.errors) {
+        const backendErrors = {};
+        err.errors.forEach(error => {
+          if (error.field && error.message) {
+            backendErrors[error.field] = error.message;
+          }
+        });
+        setErrors(backendErrors);
+      } else {
+        // Show general error message for non-validation errors
+        setErrors({ 
+          general: err.message || 'An error occurred while saving the project' 
+        });
+      }
     }
   };
 
@@ -103,6 +119,12 @@ const ProjectForm = ({ isOpen, onClose, project = null }) => {
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit}>
+        {errors.general && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {errors.general}
+          </div>
+        )}
+        
         <div className="space-y-4">
           <Input
             label="Project Name"

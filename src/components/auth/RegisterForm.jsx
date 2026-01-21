@@ -94,7 +94,20 @@ const RegisterForm = () => {
       })).unwrap();
       navigate('/dashboard');
     } catch (err) {
-      console.error('Registration error:', err);}
+      console.error('Registration error:', err);
+      
+      // Handle validation errors from backend
+      if (err.isValidationError && err.errors) {
+        const backendErrors = {};
+        err.errors.forEach(error => {
+          if (error.field && error.message) {
+            backendErrors[error.field] = error.message;
+          }
+        });
+        setErrors(backendErrors);
+      }
+      // For non-validation errors, the error is already handled by Redux state
+    }
   };
 
   return (
